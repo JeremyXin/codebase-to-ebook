@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Codebase-to-Ebook">
+  <title>{{BOOK_TITLE}}</title>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="{{CSS_FILE}}">
+  
+  <!-- Mermaid.js for Diagrams -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true
+      }
+    });
+  </script>
+</head>
+<body>
+  
+  <!-- Book Header -->
+  <header>
+    <h1>{{BOOK_TITLE}}</h1>
+    {{#BOOK_SUBTITLE}}
+    <p style="font-size: 1.25rem; color: #4a4a4a; font-family: sans-serif; margin-bottom: 2rem;">{{BOOK_SUBTITLE}}</p>
+    {{/BOOK_SUBTITLE}}
+    {{#BOOK_AUTHOR}}
+    <p style="font-size: 1rem; color: #4a4a4a; font-family: sans-serif;">by {{BOOK_AUTHOR}}</p>
+    {{/BOOK_AUTHOR}}
+  </header>
+
+  <!-- Table of Contents -->
+  <nav id="table-of-contents">
+    <h2>Table of Contents</h2>
+    {{TOC_CONTENT}}
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    {{CHAPTER_CONTENT}}
+  </main>
+
