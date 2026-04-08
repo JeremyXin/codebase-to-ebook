@@ -51,6 +51,20 @@ Ask the user which format they prefer:
 
 If they don't specify, default to **HTML** (better diagram interactivity).
 
+## Skill Dependencies
+
+This skill depends on **mermaid-diagrams** for professional diagram generation. Before generating chapter content (Phase 3), install it:
+
+```bash
+npx skills add https://github.com/softaworks/agent-toolkit --skill mermaid-diagrams
+```
+
+This installs the skill to `.skills/mermaid-diagrams/` in the current project directory. The installed skill contains:
+- `SKILL.md` — Diagram type selection guide, core syntax, best practices
+- `references/` — Detailed references for each diagram type (class, sequence, flowchart, ERD, C4, architecture, advanced features)
+
+**When to read**: At the start of Phase 3. Read `.skills/mermaid-diagrams/SKILL.md` first, then consult specific `references/*.md` files as needed for the diagram types you're generating.
+
 ## The Process
 
 ### Phase 1: Deep Codebase Analysis
@@ -152,14 +166,14 @@ Generate each chapter as a Markdown file. Use the standard structure:
 
 **Rich elements to use** (read `references/rich-elements.md` for detailed patterns):
 
-| Element | Purpose | Markdown |
-|---------|---------|----------|
-| Mermaid graph TD | Architecture diagrams, module relationships | ` ```mermaid graph TD ... ``` ` |
-| Mermaid sequenceDiagram | Request processing flows, module interactions | ` ```mermaid sequenceDiagram ... ``` ` |
-| Mermaid flowchart | Business logic, decision trees | ` ```mermaid flowchart ... ``` ` |
-| Code blocks | Core code showcase | ` ```lang ... ``` ` with file path comment |
-| Tables | Design decision comparisons, API docs | Markdown table syntax |
-| Callouts | Design highlights, caveats, best practices | `> 💡 **Title**: Content` |
+| Element | Guidance Source | Purpose |
+|---------|----------------|---------|
+| Mermaid diagrams | `.skills/mermaid-diagrams/SKILL.md` + its `references/` | Architecture, flows, ERDs, C4 diagrams |
+| Code blocks | `references/rich-elements.md` | Core code showcase with file path comments |
+| Tables | `references/rich-elements.md` | Design decision comparisons, API docs |
+| Callouts | `references/rich-elements.md` | Design highlights, caveats, best practices |
+
+**Mermaid diagram generation**: Before writing any Mermaid diagrams, read `.skills/mermaid-diagrams/SKILL.md` for diagram type selection (class, sequence, flowchart, ERD, C4, state, etc.) and best practices. For complex diagrams, consult the corresponding `references/*.md` file in the mermaid-diagrams skill for detailed syntax and patterns.
 
 **Content guidelines** (read `references/content-guidelines.md` for full details):
 - Assume programming knowledge — don't explain basics
@@ -179,7 +193,10 @@ Dispatch subagents using Chapter Briefs.
 - Each subagent claims the brief document in the `ebook-name/briefs/` directory to complete writing the corresponding chapter content. 
 - Each subagent is assigned a maximum of 3 briefs.
 
-**NOTE: The subagent not read: ** the full codebase (snippets are in the brief), all the content needed by the subagent has been generated in the brief document, which can avoid unnecessary token waste.
+**Subagent instructions:**
+- Each subagent MUST read `.skills/mermaid-diagrams/SKILL.md` before generating any Mermaid diagrams. For specific diagram types, consult the corresponding reference file (e.g., `.skills/mermaid-diagrams/references/sequence-diagrams.md` for sequence diagrams).
+- Each subagent MUST read `references/content-guidelines.md` for writing style guidance.
+- Subagents should NOT read the full codebase — all needed code snippets are pre-extracted in the brief document. This avoids unnecessary token waste.
 
 The main Agent is responsible for monitoring the execution of subagent tasks. When all subagent tasks have been completed, the main agent needs to make a check to see if the `ebook-name/chapters/` directory contains all expected chapters. If there are any missing items, please continue to call up the subagent to complete the missing chapter.
 
@@ -262,7 +279,7 @@ The `references/` directory contains detailed specs. **Read them only when you r
 
 - **`references/content-guidelines.md`** — Writing style, content density, code explanation patterns
 - **`references/chapter-brief-template.md`** — Template for Phase 2.5 briefs (complex projects)
-- **`references/rich-elements.md`** — Mermaid diagram patterns, callout syntax, table formatting
+- **`references/rich-elements.md`** — Callout syntax, table formatting, code block patterns
 - **`references/gotchas.md`** — Common pitfalls checklist (read before Phase 4)
 - **`references/html-book.css`** — Pre-built HTML stylesheet
 - **`references/epub-book.css`** — Pre-built EPUB stylesheet
@@ -270,6 +287,9 @@ The `references/` directory contains detailed specs. **Read them only when you r
 - **`references/_footer.html`** — HTML footer template
 - **`references/build-html.sh`** — HTML assembly script
 - **`references/build-epub.sh`** — EPUB assembly script
+
+**External dependency** (installed at runtime):
+- **`.skills/mermaid-diagrams/`** — Comprehensive Mermaid diagramming guide with diagram type selection, syntax references, and best practices. Installed via `npx skills add` at the start of Phase 3.
 
 ---
 

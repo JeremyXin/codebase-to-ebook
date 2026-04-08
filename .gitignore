@@ -1,6 +1,9 @@
 # Sisyphus working directory
 .sisyphus/
 
+# Runtime skill dependencies (installed via npx skills add)
+.skills/
+
 # Swap files
 *.swp
 *.swo
