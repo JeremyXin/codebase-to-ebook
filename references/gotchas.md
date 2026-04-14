@@ -1,6 +1,16 @@
 # Gotchas Checklist
 
-Common pitfalls when generating ebooks from codebases. Review this before delivery.
+Common pitfalls when generating ebooks from codebases. Review this before Phase 4 assembly.
+
+**Scope: technical correctness.** This checklist covers rendering, formatting, and compatibility issues — not writing quality. Content quality (voice, density, structure, style) is validated by Phase 3.5 using `content-guidelines.md`. The two checklists are complementary:
+
+| Phase 3.5 (content-guidelines.md) | Phase 4 (gotchas.md) |
+|-----------------------------------|---------------------|
+| Is the writing style correct? | Does the Mermaid syntax render? |
+| Is information density high enough? | Are Markdown tables formatted correctly? |
+| Does the chapter end with a forward connection? | Is the heading hierarchy valid? |
+| Are code snippets explained properly? | Do code blocks have file path annotations? |
+| Is the output language consistent? | Is the EPUB CSS compatible? |
 
 ---
 

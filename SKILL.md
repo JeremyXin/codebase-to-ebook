@@ -69,44 +69,98 @@ This installs the skill to `.skills/mermaid-diagrams/` in the current project di
 
 ### Phase 1: Deep Codebase Analysis
 
-Before writing any content, thoroughly understand the codebase. Read all key files, trace data flows, identify the main modules, and map how they communicate.
-
-**What to extract:**
-
-1. **Project Overview**
-   - Name, purpose, problem it solves (from README)
-   - Tech stack (language, frameworks, libraries, build tools)
-   - Directory structure and organizational patterns
-
-2. **Architecture Analysis**
-   - Core modules/packages and their responsibilities
-   - Inter-module dependencies (who calls whom)
-   - Data flow (request → processing → response paths)
-   - Layering structure (e.g., Controller → Service → Repository)
-
-3. **Core Code Reading**
-   - Entry points (main, index, app)
-   - Key interfaces/API definitions
-   - Critical business logic locations
-   - Important design pattern usage
-
-4. **Engineering Practices**
-   - Configuration management approach
-   - Error handling strategy
-   - Test structure
-   - Build and deployment pipeline
-
-5. **Design Decision Clues**
-   - ADRs (Architecture Decision Records) in README/docs
-   - "Why" comments in code
-   - TODO/FIXME exposing known issues
-   - Git history showing major refactoring
+Before writing any content, thoroughly understand the codebase through a structured, progressive analysis.
 
 **Figure out what the system does yourself** by reading the README, entry points, and core modules. Don't ask the user to explain the project — they may not know it either.
 
+#### Analysis Strategy: Three-Layer Progressive Reading
+
+Read files in priority order. Do not read all files upfront — expand scope only when needed.
+
+**Layer 1 — Orientation (always read these first):**
+- `README.md` / `README.rst` — project purpose, tech stack, architecture notes
+- Directory structure (2-3 levels deep) — organizational patterns
+- Entry points — `main.*`, `index.*`, `app.*`, `server.*`, `cmd/`
+- Dependency manifest — `package.json`, `go.mod`, `pom.xml`, `requirements.txt`, `Cargo.toml`
+  - Purpose: infer frameworks, core libraries, and responsibility boundaries from dependencies
+
+**Layer 2 — Core Module Sampling (based on Layer 1 findings):**
+- Identify directory types and read representative files from each:
+  - Core business directories (`src/core/`, `internal/`, `lib/`) — read the most complex files
+  - Interface definitions (`api/`, `interfaces/`, `types/`) — read all (usually few files)
+  - Configuration (`config/`, `settings/`) — read default config file
+  - Tests (`test/`, `__tests__/`) — read 1 integration test to understand expected behavior
+- Skip directories: `vendor/`, `node_modules/`, `dist/`, `build/`, generated code
+
+**Layer 3 — Targeted Deep Exploration (on-demand, not default):**
+Trigger only when:
+- A module is referenced by multiple others but hasn't been read yet
+- An important interface is found but its implementation is missing
+- Dependency relationships are unclear — can't trace the data flow
+
+For **large projects** (50+ core files): prioritize files with the highest in-degree (most depended upon by other modules).
+
+#### Stop Condition
+
+Stop reading when you can answer all three:
+1. **Data flow**: What is the core request/data path? (entry → processing → output)
+2. **Module boundaries**: What does each module own, and what are the dependency directions?
+3. **Design decisions**: What are the notable architectural choices and their visible rationale?
+
+If all three are answerable, proceed to output — do not keep reading for completeness.
+
+#### Phase 1 Output: `analysis-notes.md`
+
+After analysis, **immediately** write `ebook-name/analysis-notes.md` with the following structure. This file is the single source of truth for all subsequent phases — no phase should rely on chat history for codebase understanding.
+
+```markdown
+# Analysis Notes: {Project Name}
+
+## Project Overview
+- **Purpose:** [One sentence]
+- **Tech Stack:** [Language / Framework / Key libraries]
+- **Scale:** [File count, module count, approximate LOC]
+- **Output Language:** [Detected from user's conversation language, e.g., "zh-CN", "en"]
+
+## Module Map
+| Module | Path | Responsibility | Key Files | Depended-on By |
+|--------|------|----------------|-----------|---------------|
+
+## Dependency Graph
+[Module A] → [Module B], [Module C]
+[Module B] → [Module D]
+
+## Core Data Flow
+[Entry Point] → [Step 1: what happens] → [Step 2] → ... → [Output]
+
+## Design Decision Clues
+- [ADR / why-comment / TODO-FIXME / refactoring evidence with file locations]
+
+## Code Snippet Index
+> Purpose: Pre-register code snippets suitable for chapter examples.
+> Phase 2.5 briefs will reference this index directly instead of re-scanning the codebase.
+
+| Module | File:Lines | What It Shows | Suitable For Block |
+|--------|-----------|---------------|-------------------|
+| [e.g., Auth] | [src/auth/jwt.ts:45-78] | [JWT validation logic] | [CODE-WALKTHROUGH] |
+
+## Terminology
+| Term in Codebase | Standardized Term for Ebook | Notes |
+|-----------------|---------------------------|-------|
+| [e.g., "handler" and "controller" both used] | [controller] | [Standardize to match the dominant usage] |
+```
+
+**This file enables:**
+- Phase 2: chapter selection based on Module Map and Dependency Graph
+- Phase 2.5: brief writing using Code Snippet Index (no codebase re-reading)
+- Phase 3: writing agents reference Terminology for consistency
+- Resumption: any interrupted session can read this file to restore full context
+
 ### Phase 2: Chapter Structure Design
 
-Design a logically progressive technical book structure. This is a reference template — adapt to the actual codebase:
+Using the `analysis-notes.md` from Phase 1, determine which chapters the book needs and in what order.
+
+#### Typical Book Arc
 
 | Position | Typical Content | Purpose |
 |----------|----------------|---------|
@@ -117,33 +171,111 @@ Design a logically progressive technical book structure. This is a reference tem
 | Second-to-last | Cross-cutting concerns (error handling, config, security) | Engineering practices |
 | Last chapter | Summary + extension directions | Wrap-up |
 
-**Chapter count guidance** (AI auto-adaptive):
+#### Chapter Selection Rules
+
+Use the Module Map and Dependency Graph from `analysis-notes.md` to decide chapter topics.
+
+**Rule 1 — When a module deserves its own chapter:**
+A module gets its own chapter if it meets **two or more** of these criteria:
+- **Depended-on breadth:** 3+ other modules directly depend on it
+- **Code volume:** module has ≥3 files or a core file ≥300 lines
+- **Conceptual independence:** it exposes its own abstraction (interface, core class, protocol) that other modules consume
+- **README prominence:** it has a dedicated section in the project README
+- **Design decision density:** contains visible technical choices (ADRs, why-comments, multiple implementations)
+
+**Rule 2 — When modules should be merged into one chapter:**
+Merge when **any one** of these applies:
+- Both modules individually fail to meet Rule 1 criteria
+- Two modules are conceptually inseparable — explaining one without the other creates a gap (e.g., Encoder/Decoder, Request/Response)
+- One module is a dedicated utility for another with no independent conceptual value
+
+**Rule 3 — Chapter ordering (by cognitive dependency):**
+Order chapters by what the reader needs to understand first, not by code dependency:
+1. Fixed positions: Preface → Overview → Architecture (always first three)
+2. Deep Dive chapters: order by **data flow position** — modules closer to the entry point come first; if tied, modules with higher in-degree (depended upon by more others) come first
+3. Cross-cutting concerns chapters: placed after all Deep Dive chapters (the reader needs full context). A topic becomes a cross-cutting chapter when it appears in 3+ Deep Dive chapters but belongs to no single module (e.g., error handling, configuration, auth)
+4. Final chapter: Summary / Extension Points (always last)
+
+**Rule 4 — When to split a module into multiple chapters:**
+Split when **any one** of these applies:
+- The module contains two conceptually independent subsystems (e.g., Netty's Channel vs Pipeline)
+- A single chapter would exceed ~4000 words and still not cover the core content
+- The module has distinct "usage layer" and "implementation layer" that serve different reader needs
+
+**Rule 5 — Chapter count sanity check:**
+After selection, validate against project scale:
 - Small project (<10 core files): 3-5 chapters
 - Medium project (10-50 core files): 5-8 chapters
 - Large project (50+ core files): 8-12 chapters
 
-**Do NOT present the outline for approval** — just build it. The user wants an ebook, not a planning document.
+If the count exceeds the range, look for Rule 2 merge candidates. If below the range, check for missing cross-cutting concerns.
 
-### Phase 2.5: Chapter Briefs (Complex Projects Only)
+#### Chapter List Output
 
-If the codebase has 6+ chapters, write a brief for each chapter before generating content. This enables parallel writing.
+Record the final chapter list in `analysis-notes.md` by appending a `## Chapter Plan` section:
 
-Read `references/chapter-brief-template.md` for the template structure.
+```markdown
+## Chapter Plan
+| # | Title | Type | Source Modules | Rationale |
+|---|-------|------|---------------|-----------|
+| 0 | Preface | preface | — | Standard |
+| 1 | ... | overview | — | Standard |
+| 2 | ... | architecture | all | Standard |
+| 3 | ... | deep-dive | [Module A] | [Why independent: high in-degree, conceptual independence] |
+| 4 | ... | deep-dive | [Module B, C] | [Why merged: B is C's utility, no independent value] |
+| ... | | | | |
+| N-1 | ... | cross-cutting | — | [Appears in Ch3, Ch4, Ch5] |
+| N | ... | summary | — | Standard |
+```
 
-**For each chapter, write a brief to `ebook-name/briefs/0N-slug.md` containing:**
-- Teaching objective (what the reader should understand)
-- Pre-extracted code snippets (copy-pasted from codebase with file paths)
-- Mermaid diagram plans (what to diagram and why)
-- Chapter structure outline
-- Connections to previous/next chapters
+**Do NOT present the outline to the user for approval** by default — just build it. If the user explicitly requests to review the chapter structure, present the Chapter Plan table and wait for confirmation before proceeding.
 
-The pre-extracted code is critical — it allows writing agents to work without re-reading the codebase.
+### Phase 2.5: Chapter Briefs
+
+Write a brief for **every chapter** before generating content. Briefs serve as the contract between the main agent and writing subagents — they externalize the plan so writing agents don't need codebase access or chat history.
+
+Read `references/chapter-brief-template.md` for the full template structure.
+
+#### Brief Scale
+
+| Project Size | Brief Format | Rationale |
+|-------------|-------------|-----------|
+| **<6 chapters** | **Lightweight brief** — 4 fields only | Small projects don't need full briefs; overhead would approach the writing cost itself |
+| **≥6 chapters** | **Full brief** — complete template | Complex projects need full context for parallel subagents |
+
+**Lightweight brief** (for <6 chapters) — write to `ebook-name/briefs/0N-slug.md`:
+```markdown
+## Teaching Objective
+[Core learning goal for this chapter]
+
+## Block Sequence
+HOOK → [BLOCK] → ... → RECAP-BRIDGE
+[Structure rationale: 2-3 sentences on why these blocks in this order]
+
+## Key Code Snippets
+[Copy from analysis-notes.md Code Snippet Index — paste relevant snippets with file paths]
+
+## RECAP-BRIDGE Notes
+[What the reader now understands + what problem the next chapter introduces]
+```
+
+**Full brief** (for ≥6 chapters) — use the complete `references/chapter-brief-template.md` template.
+
+#### Code Snippet Selection
+
+When populating briefs, select code snippets from `analysis-notes.md`'s Code Snippet Index using these criteria:
+- **Entry points** — how the module is invoked from outside
+- **High-dependency files** — files imported/referenced by the most other files
+- **Core business logic** — functions that implement the module's primary responsibility
+- **Design pattern exemplars** — code that best illustrates a design decision
+
+Each brief should include 2-5 snippets. Do not re-read the codebase — all snippets should come from the Phase 1 index.
 
 ### Phase 3: Chapter Content Generation
 
 Generate each chapter as a Markdown file by executing the **building block sequence** defined in that chapter's Brief.
 
-**Chapter structure is content-driven, not template-driven.** Each chapter's Brief (Phase 2.5) specifies which building blocks to use and in what order — chosen to best serve that chapter's teaching objective. Two chapters covering different topics will have different structures.
+**Chapter structure is content-driven, not template-driven.** Each chapter's Brief specifies which building blocks to use and in what order — chosen to best serve that chapter's teaching objective. Two chapters covering different topics will have different structures.
 
 **Before writing any chapter, read:**
 - `references/block-reference.md` — rules, typical structure, and examples for each building block
@@ -164,30 +296,32 @@ Generate each chapter as a Markdown file by executing the **building block seque
 | Tables | DESIGN-DECISION, COMPARISON | Trade-off comparisons, decision matrices |
 | Callouts | Any block | Design highlights, caveats — max 2 per chapter |
 
-**Sequential path note:** For codebases with fewer than 6 chapters, there are no pre-written Briefs. Before writing each chapter, the main agent must first decide the block sequence for that chapter (applying the same Brief reasoning: what blocks best serve this chapter's teaching objective?) then write the chapter following that sequence.
+#### Writing Model: Always Multi-Agent
 
-**Writing paths:**
-- **Sequential** (<6 chapters simple codebases):
-Write chapters one at a time in order. Before writing each chapter, determine the block sequence for that chapter (which building blocks best serve this chapter's teaching objective, and in what order). Then write the chapter executing that sequence. Output each chapter to `ebook-name/chapters/`. Read `references/block-reference.md` and `references/content-guidelines.md` to guide content generation.
+All chapters are written by dispatched subagents, regardless of project size. The main agent's role is orchestration: writing briefs, dispatching agents, monitoring completion, and handling validation.
 
-- **Parallel** (≥6 chapters complex codebases):
-Dispatch subagents using Chapter Briefs.
-- Each subagent claims the brief document in the `ebook-name/briefs/` directory to complete writing the corresponding chapter content.
-- Each subagent is assigned a maximum of 3 briefs.
+| Project Size | Dispatch Strategy |
+|-------------|------------------|
+| **<6 chapters** | Dispatch subagents — 1 brief per subagent |
+| **≥6 chapters** | Dispatch subagents — up to 3 briefs per subagent |
 
 **Subagent instructions:**
 - Each subagent MUST read `references/block-reference.md` before writing — the Brief specifies the block sequence; the block reference defines the rules for each block.
 - Each subagent MUST read `.skills/mermaid-diagrams/SKILL.md` before generating any Mermaid diagrams. For specific diagram types, consult the corresponding reference file (e.g., `.skills/mermaid-diagrams/references/sequence-diagrams.md` for sequence diagrams).
 - Each subagent MUST read `references/content-guidelines.md` for global quality standards.
 - Subagents should NOT read the full codebase — all needed code snippets are pre-extracted in the brief document. This avoids unnecessary token waste.
+- Output each chapter to `ebook-name/chapters/`.
 
-The main Agent is responsible for monitoring the execution of subagent tasks. When all subagent tasks have been completed, the main agent needs to make a check to see if the `ebook-name/chapters/` directory contains all expected chapters. If there are any missing items, please continue to call up the subagent to complete the missing chapter.
+**Main agent monitoring:**
+The main agent monitors subagent execution. When all subagents complete, check `ebook-name/chapters/` for all expected chapter files (compare against the Chapter Plan in `analysis-notes.md`). If any chapters are missing, dispatch additional subagents to complete them.
 
 ### Phase 3.5: Chapter Content Validation
 
 After chapters are written to `ebook-name/chapters/`, validate each chapter against **all rules** in `references/content-guidelines.md`. This is a mandatory quality gate before proceeding to assembly.
 
-**Validation model: the validation subagent is read-only.** It inspects the chapter, produces a structured report, and never modifies the file. The original writer (main agent in Sequential, a repair subagent in Parallel) is responsible for fixing any issues.
+**Scope: content quality.** Phase 3.5 checks writing quality, structure, and style. Technical correctness (Mermaid syntax, Markdown rendering, EPUB compatibility) is checked separately before Phase 4 using `references/gotchas.md`.
+
+**Validation model: the validation subagent is read-only.** It inspects the chapter, produces a structured report, and never modifies the file. A separate repair subagent is responsible for fixing any issues.
 
 #### Validation Subagent Prompt Template
 
@@ -200,7 +334,8 @@ TASK: Validate the chapter at `{chapter_path}` against ALL rules in
 EXPECTED OUTCOME: A structured validation report (format below) with a
 PASS/FAIL verdict and item-level details.
 
-REQUIRED TOOLS: Read (chapter file, references/content-guidelines.md)
+REQUIRED TOOLS: Read (chapter file, references/content-guidelines.md,
+ebook-name/analysis-notes.md for Output Language field)
 
 MUST DO:
 - Read `references/content-guidelines.md` completely before checking.
@@ -224,6 +359,10 @@ MUST DO:
     trade-offs → connection.
   □ Metaphor quality: metaphors (if any) are natural, varied, and not
     recycled across sections.
+  □ Output language: chapter prose matches the target language recorded
+    in `ebook-name/analysis-notes.md` (Output Language field). Code
+    snippets, variable names, and file paths remain in their original
+    language regardless.
 - For each FAIL item, provide the specific location (section/paragraph)
   and a concrete, actionable fix suggestion.
 
@@ -235,7 +374,7 @@ MUST NOT DO:
 CONTEXT:
 - Chapter file: `{chapter_path}`
 - Guidelines: `references/content-guidelines.md`
-- Chapter brief (if exists): `{brief_path}`
+- Chapter brief: `{brief_path}`
 - Previous/next chapter titles: `{prev_title}` / `{next_title}`
 ```
 
@@ -259,21 +398,7 @@ The validation subagent must output its report in this structure:
 {1-2 sentences: overall quality assessment and highest-priority fixes if FAIL}
 ```
 
-#### Sequential Path Validation Flow (<6 chapters)
-
-After the main agent writes each chapter to `ebook-name/chapters/`:
-
-1. Dispatch a validation subagent (read-only) for that chapter.
-2. Collect the validation report.
-   - **PASS** — Proceed to write the next chapter.
-   - **FAIL** — The main agent fixes the chapter based on the report, then re-dispatches the validation subagent. Repeat up to **3 rounds**.
-3. If the chapter still fails after 3 rounds, mark it with a comment at the top of the file:
-   ```markdown
-   <!-- VALIDATION: NEEDS MANUAL REVIEW — failed after 3 validation rounds -->
-   ```
-   Then proceed to the next chapter. Do not block the pipeline.
-
-#### Parallel Path Validation Flow (≥6 chapters)
+#### Validation Flow
 
 After all writing subagents complete and the main agent confirms all chapters exist:
 
@@ -287,7 +412,11 @@ After all writing subagents complete and the main agent confirms all chapters ex
    - Instructions to fix only the items listed in the report
 5. After repair subagents complete, re-dispatch validation subagents for the repaired chapters.
 6. Repeat the validate-repair cycle up to **3 rounds** per chapter.
-7. Chapters still failing after 3 rounds get the manual review marker (same as Sequential) and the pipeline continues.
+7. Chapters still failing after 3 rounds, mark with a comment at the top of the file:
+   ```markdown
+   <!-- VALIDATION: NEEDS MANUAL REVIEW — failed after 3 validation rounds -->
+   ```
+   Then continue the pipeline — do not block.
 
 **Repair subagent instructions:**
 - Read the validation report and the chapter file.
@@ -299,15 +428,18 @@ After all writing subagents complete and the main agent confirms all chapters ex
 #### Validation Efficiency Notes
 
 - Validation subagents are lightweight — they only read two files (chapter + guidelines). Keep them fast.
-- In Parallel path, launch all validation subagents simultaneously to minimize wall-clock time.
+- Launch all validation subagents simultaneously to minimize wall-clock time.
 - Repair subagents should fix surgically: address report items, nothing else.
 - The 3-round cap prevents infinite loops. Most chapters should pass within 1-2 rounds.
 
 ### Phase 4: Assembly & Output
 
+**Before assembly, read `references/gotchas.md` for technical correctness checks.** Phase 3.5 validated content quality; `gotchas.md` covers a different dimension — Mermaid syntax validity, Markdown rendering, heading hierarchy, code block annotations, EPUB compatibility, and terminology consistency. Fix any gotchas issues before building.
+
 **Output directory structure:**
 ```
 ebook-name/
+  analysis-notes.md        ← Phase 1 output: project analysis + code snippet index
   metadata.yaml           ← Book metadata (title, author, language)
   styles/
     html-book.css          ← Copied from references/
@@ -317,7 +449,7 @@ ebook-name/
     01-overview.md
     02-architecture.md
     ...
-  briefs/                  ← Chapter Briefs (complex projects only)
+  briefs/                  ← Chapter Briefs (all projects)
   assets/                  ← Mermaid pre-rendered images (EPUB build)
   _base.html               ← HTML shell template
   _footer.html             ← HTML footer
@@ -335,13 +467,13 @@ ebook-name/
 - `references/build-html.sh` → `ebook-name/build-html.sh`
 - `references/build-epub.sh` → `ebook-name/build-epub.sh`
 
-**Step 2: Create metadata.yaml** — Write book metadata:
+**Step 2: Create metadata.yaml** — Write book metadata. Read the `Output Language` field from `ebook-name/analysis-notes.md` for the `lang` value:
 ```yaml
 ---
 title: "Project Name: Architecture Guide"
 author: "Generated by AI"
 date: "2026-01-15"
-lang: en
+lang: en  # ← Use value from analysis-notes.md Output Language field
 ---
 ```
 
@@ -373,6 +505,43 @@ After building:
    - HTML: Open `index.html` in any browser
    - EPUB: Open `book.epub` in Kindle, iBooks, or any e-reader
 3. Ask for feedback and offer per-chapter revisions if needed
+
+---
+
+## Context Management & Resumption
+
+### Why This Matters
+
+Generating a full ebook can span long sessions. The LLM context window is finite — early content gets pushed out. Every phase produces persistent files so that no phase depends on chat history.
+
+### Context Externalization Map
+
+| Phase | Persistent Output | What It Preserves |
+|-------|------------------|-------------------|
+| Phase 1 | `ebook-name/analysis-notes.md` | Project understanding, module map, code snippet index, terminology |
+| Phase 2 | `analysis-notes.md` → `## Chapter Plan` | Chapter list with types and rationale |
+| Phase 2.5 | `ebook-name/briefs/0N-slug.md` | Per-chapter structure, block sequence, pre-extracted code |
+| Phase 3 | `ebook-name/chapters/0N-slug.md` | Written chapter content |
+| Phase 3.5 | Validation reports (in agent output) | Pass/fail status per chapter |
+| Phase 4 | `ebook-name/index.html` or `book.epub` | Final assembled output |
+
+### Resumption Protocol
+
+If a session is interrupted (token exhaustion, network disconnect, manual stop), resume as follows:
+
+1. Read `ebook-name/analysis-notes.md` → restore project understanding
+2. Read `## Chapter Plan` in analysis-notes → know what chapters are planned
+3. List `ebook-name/briefs/` → know which briefs are written
+4. List `ebook-name/chapters/` → know which chapters are completed
+5. Compare briefs vs chapters → identify incomplete chapters
+6. Check for `<!-- VALIDATION: NEEDS MANUAL REVIEW -->` markers → identify chapters needing attention
+7. Resume from the earliest incomplete phase:
+   - Missing analysis-notes → restart from Phase 1
+   - Missing briefs → restart from Phase 2.5
+   - Missing chapters → dispatch writing subagents for missing chapters only
+   - All chapters present but no build output → proceed to Phase 4
+
+**Never re-read the full codebase on resumption.** The analysis-notes and briefs contain everything needed.
 
 ---
 
