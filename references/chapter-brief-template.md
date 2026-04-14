@@ -21,6 +21,46 @@
 
 ---
 
+## Chapter Structure
+
+> **Purpose:** Define the building block sequence for this chapter. The writing agent follows this sequence exactly. Refer to `references/block-reference.md` for each block's rules and examples.
+
+**Block Sequence:**
+
+```
+HOOK → [BLOCK] → [BLOCK] → ... → RECAP-BRIDGE
+```
+
+[Replace the placeholders with the chosen blocks in order. Example:
+`HOOK → BIG-PICTURE-DIAGRAM → MECHANISM → CODE-WALKTHROUGH → MINI-DEMO → RECAP-BRIDGE`]
+
+**Structure Rationale:**
+
+[Explain why this specific block sequence best serves this chapter's teaching objective.
+Cover: why each selected block was included, why blocks were ordered this way, and
+which blocks from the full list were deliberately excluded and why.
+
+Example: "This chapter's core insight is the Reactor threading model — a mechanism
+the reader can't intuit from API usage alone. BIG-PICTURE-DIAGRAM establishes spatial
+orientation first. MECHANISM explains the select-loop design and why it solves the
+thread-per-connection problem. CODE-WALKTHROUGH grounds the explanation in NioEventLoop.
+MINI-DEMO strips the 800-line class to 30 lines of plain NIO to crystallize the core.
+ANALOGY and COMPARISON were excluded — MECHANISM + MINI-DEMO are sufficient, and
+stacking more explanatory blocks would slow the chapter's pace."]
+
+**Per-Block Content Notes:**
+
+For each block in the sequence, briefly note what specific content it should contain
+(the writing agent uses these notes when the pre-extracted snippets below are not
+self-explanatory):
+
+- **HOOK:** [What question or scenario opens this chapter]
+- **[BLOCK]:** [What specific content, diagram, or code this block covers]
+- **[BLOCK]:** [...]
+- **RECAP-BRIDGE:** [What the reader now understands + what problem the next chapter introduces]
+
+---
+
 ## Pre-Extracted Code Snippets
 
 > **Purpose:** These snippets are pre-selected from the codebase. Subagents writing the chapter should use these directly without re-reading the codebase.
@@ -146,9 +186,10 @@ flowchart LR
 
 [Add more sections as needed]
 
-### Conclusion (200-300 words)
-- Recap key learnings
-- Transition to next chapter: [Brief preview of next topic]
+### RECAP-BRIDGE (2-4 sentences)
+- What the reader now understands that they didn't before (1-2 sentences)
+- What problem the next chapter solves — and why it's necessary given what was just learned (1-2 sentences)
+- Note: do NOT write a bullet-point summary of everything covered; this is a forward pass, not a recap list
 
 ---
 

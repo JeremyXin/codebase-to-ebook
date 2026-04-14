@@ -141,62 +141,44 @@ The pre-extracted code is critical — it allows writing agents to work without 
 
 ### Phase 3: Chapter Content Generation
 
-Generate each chapter as a Markdown file. Use the standard structure:
+Generate each chapter as a Markdown file by executing the **building block sequence** defined in that chapter's Brief.
 
-```markdown
-# Chapter N: Title
+**Chapter structure is content-driven, not template-driven.** Each chapter's Brief (Phase 2.5) specifies which building blocks to use and in what order — chosen to best serve that chapter's teaching objective. Two chapters covering different topics will have different structures.
 
-> 📌 Core question: [What this chapter answers]
+**Before writing any chapter, read:**
+- `references/block-reference.md` — rules, typical structure, and examples for each building block
+- `references/content-guidelines.md` — global quality standards (voice, density, code patterns) that apply to all blocks
 
-## N.1 Overview
-[Review the content of the previous chapter and extend the content to be explained in the current chapter.]
-[2-3 paragraphs introducing the module/topic]
+**Every chapter must start with HOOK and end with RECAP-BRIDGE.** All blocks in between come from the Brief's specified sequence.
 
-## N.2 Architecture & Design
-[Mermaid diagram + explanation of relationships and design decisions]
+**Block execution:** For each block in the sequence, consult `references/block-reference.md` for that block's content rules and structure. The Brief's "Per-Block Content Notes" provide chapter-specific guidance on what each block should cover.
 
-## N.3 Core Code Walkthrough
-[Key functions/classes with code blocks + detailed explanations]
+**Mermaid diagrams:** Before writing any Mermaid diagram (used in BIG-PICTURE-DIAGRAM, MECHANISM, SEQUENCE-FLOW, and others), read `.skills/mermaid-diagrams/SKILL.md` for diagram type selection and best practices. For complex diagrams, consult the relevant `references/*.md` file in the mermaid-diagrams skill.
 
-## N.4 Design Decisions
-[Tables comparing choices, trade-offs, rationale]
+**Rich elements reference** (`references/rich-elements.md`):
 
-## N.5 Summary
-[Key takeaways + connection to next chapter]
-```
-
-**Rich elements to use** (read `references/rich-elements.md` for detailed patterns):
-
-| Element | Guidance Source | Purpose |
+| Element | Relevant Blocks | Purpose |
 |---------|----------------|---------|
-| Mermaid diagrams | `.skills/mermaid-diagrams/SKILL.md` + its `references/` | Architecture, flows, ERDs, C4 diagrams |
-| Code blocks | `references/rich-elements.md` | Core code showcase with file path comments |
-| Tables | `references/rich-elements.md` | Design decision comparisons, API docs |
-| Callouts | `references/rich-elements.md` | Design highlights, caveats, best practices |
+| Mermaid diagrams | BIG-PICTURE-DIAGRAM, MECHANISM, SEQUENCE-FLOW | Architecture, flows, ERDs, C4 diagrams |
+| Code blocks | CODE-WALKTHROUGH, MINI-DEMO | Codebase code with file path; skeleton demos |
+| Tables | DESIGN-DECISION, COMPARISON | Trade-off comparisons, decision matrices |
+| Callouts | Any block | Design highlights, caveats — max 2 per chapter |
 
-**Mermaid diagram generation**: Before writing any Mermaid diagrams, read `.skills/mermaid-diagrams/SKILL.md` for diagram type selection (class, sequence, flowchart, ERD, C4, state, etc.) and best practices. For complex diagrams, consult the corresponding `references/*.md` file in the mermaid-diagrams skill for detailed syntax and patterns.
-
-**Content guidelines** (read `references/content-guidelines.md` for full details):
-- Assume programming knowledge — don't explain basics
-- Explain design decisions — WHY this pattern, not just WHAT
-- Code first, then explain — show the code, then walk through it
-- Use original code only — exact copies, never modified
-- Tables for comparisons — choices, alternatives, trade-offs
-- One core concept per section
-- Connect chapters — each ends with bridge to next
+**Sequential path note:** For codebases with fewer than 6 chapters, there are no pre-written Briefs. Before writing each chapter, the main agent must first decide the block sequence for that chapter (applying the same Brief reasoning: what blocks best serve this chapter's teaching objective?) then write the chapter following that sequence.
 
 **Writing paths:**
-- **Sequential** (<6 chapters simple codebases): 
-For codebases with less than 6 chapters, write modules one at a time. Write the content of each chapter in order, and output the document for each chapter to `ebook-name/chapters/`. Read `references/content-guidelines.md` to guide content generation.
+- **Sequential** (<6 chapters simple codebases):
+Write chapters one at a time in order. Before writing each chapter, determine the block sequence for that chapter (which building blocks best serve this chapter's teaching objective, and in what order). Then write the chapter executing that sequence. Output each chapter to `ebook-name/chapters/`. Read `references/block-reference.md` and `references/content-guidelines.md` to guide content generation.
 
-- **Parallel** (≥6 chapters complex codebases): 
-Dispatch subagents using Chapter Briefs. 
-- Each subagent claims the brief document in the `ebook-name/briefs/` directory to complete writing the corresponding chapter content. 
+- **Parallel** (≥6 chapters complex codebases):
+Dispatch subagents using Chapter Briefs.
+- Each subagent claims the brief document in the `ebook-name/briefs/` directory to complete writing the corresponding chapter content.
 - Each subagent is assigned a maximum of 3 briefs.
 
 **Subagent instructions:**
+- Each subagent MUST read `references/block-reference.md` before writing — the Brief specifies the block sequence; the block reference defines the rules for each block.
 - Each subagent MUST read `.skills/mermaid-diagrams/SKILL.md` before generating any Mermaid diagrams. For specific diagram types, consult the corresponding reference file (e.g., `.skills/mermaid-diagrams/references/sequence-diagrams.md` for sequence diagrams).
-- Each subagent MUST read `references/content-guidelines.md` for writing style guidance.
+- Each subagent MUST read `references/content-guidelines.md` for global quality standards.
 - Subagents should NOT read the full codebase — all needed code snippets are pre-extracted in the brief document. This avoids unnecessary token waste.
 
 The main Agent is responsible for monitoring the execution of subagent tasks. When all subagent tasks have been completed, the main agent needs to make a check to see if the `ebook-name/chapters/` directory contains all expected chapters. If there are any missing items, please continue to call up the subagent to complete the missing chapter.
@@ -398,8 +380,9 @@ After building:
 
 The `references/` directory contains detailed specs. **Read them only when you reach the relevant phase** — not upfront. This keeps context lean.
 
-- **`references/content-guidelines.md`** — Writing style, content density, code explanation patterns
-- **`references/chapter-brief-template.md`** — Template for Phase 2.5 briefs (complex projects)
+- **`references/content-guidelines.md`** — Writing style, content density, code explanation patterns (global quality standards for all blocks)
+- **`references/block-reference.md`** — The 11 building blocks: trigger conditions, content rules, typical structure, examples, and block relationships
+- **`references/chapter-brief-template.md`** — Template for Phase 2.5 briefs (complex projects), including Chapter Structure with block sequence
 - **`references/rich-elements.md`** — Callout syntax, table formatting, code block patterns
 - **`references/gotchas.md`** — Common pitfalls checklist (read before Phase 4)
 - **`references/html-book.css`** — Pre-built HTML stylesheet
