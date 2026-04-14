@@ -4,6 +4,9 @@
 # Runtime skill dependencies (installed via npx skills add)
 .skills/
 
+# Backup files
+SKILL.md-bak*
+
 # Swap files
 *.swp
 *.swo

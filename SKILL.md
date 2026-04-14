@@ -149,6 +149,7 @@ Generate each chapter as a Markdown file. Use the standard structure:
 > 📌 Core question: [What this chapter answers]
 
 ## N.1 Overview
+[Review the content of the previous chapter and extend the content to be explained in the current chapter.]
 [2-3 paragraphs introducing the module/topic]
 
 ## N.2 Architecture & Design
@@ -199,6 +200,126 @@ Dispatch subagents using Chapter Briefs.
 - Subagents should NOT read the full codebase — all needed code snippets are pre-extracted in the brief document. This avoids unnecessary token waste.
 
 The main Agent is responsible for monitoring the execution of subagent tasks. When all subagent tasks have been completed, the main agent needs to make a check to see if the `ebook-name/chapters/` directory contains all expected chapters. If there are any missing items, please continue to call up the subagent to complete the missing chapter.
+
+### Phase 3.5: Chapter Content Validation
+
+After chapters are written to `ebook-name/chapters/`, validate each chapter against **all rules** in `references/content-guidelines.md`. This is a mandatory quality gate before proceeding to assembly.
+
+**Validation model: the validation subagent is read-only.** It inspects the chapter, produces a structured report, and never modifies the file. The original writer (main agent in Sequential, a repair subagent in Parallel) is responsible for fixing any issues.
+
+#### Validation Subagent Prompt Template
+
+When dispatching a validation subagent for a chapter, use this prompt structure:
+
+```
+TASK: Validate the chapter at `{chapter_path}` against ALL rules in
+`references/content-guidelines.md`.
+
+EXPECTED OUTCOME: A structured validation report (format below) with a
+PASS/FAIL verdict and item-level details.
+
+REQUIRED TOOLS: Read (chapter file, references/content-guidelines.md)
+
+MUST DO:
+- Read `references/content-guidelines.md` completely before checking.
+- Check every rule in the document, including but not limited to:
+  □ Text ratio: prose must not exceed 60% of the chapter; code/diagrams ≥40%.
+  □ Paragraph length: no single paragraph exceeds 10 lines.
+  □ Code-first pattern: code blocks appear before their explanations.
+  □ One concept per section: each section covers exactly one core concept.
+  □ Design decisions: rationale ("why") is documented, not just "what."
+  □ Mermaid diagrams: at least one diagram exists in chapters covering
+    inter-module relationships.
+  □ Callout restraint: no more than 2 callouts per logical page.
+  □ Chapter connection: chapter ends with a forward-linking paragraph to
+    the next chapter (except the final chapter).
+  □ No AI-slop phrases: "delve", "leverage", "robust", "utilize",
+    "facilitate", "comprehensive", etc.
+  □ No em dashes or en dashes (— or –).
+  □ Voice and tone: active voice, contractions, direct and technical tone.
+  □ Information density: no filler phrases, every paragraph delivers value.
+  □ Section structure: opening sentence → code example → explanation →
+    trade-offs → connection.
+  □ Metaphor quality: metaphors (if any) are natural, varied, and not
+    recycled across sections.
+- For each FAIL item, provide the specific location (section/paragraph)
+  and a concrete, actionable fix suggestion.
+
+MUST NOT DO:
+- Do NOT modify the chapter file.
+- Do NOT rewrite or generate alternative content.
+- Do NOT add commentary outside the report format.
+
+CONTEXT:
+- Chapter file: `{chapter_path}`
+- Guidelines: `references/content-guidelines.md`
+- Chapter brief (if exists): `{brief_path}`
+- Previous/next chapter titles: `{prev_title}` / `{next_title}`
+```
+
+#### Validation Report Format
+
+The validation subagent must output its report in this structure:
+
+```markdown
+## Validation Report: {filename}
+
+**Verdict: PASS | FAIL**
+
+### Passed ✅
+- [x] Item description
+
+### Failed ❌
+- [ ] **{Rule name}** — {Problem description}. Location: {section/paragraph}.
+      Suggested fix: {concrete action}.
+
+### Summary
+{1-2 sentences: overall quality assessment and highest-priority fixes if FAIL}
+```
+
+#### Sequential Path Validation Flow (<6 chapters)
+
+After the main agent writes each chapter to `ebook-name/chapters/`:
+
+1. Dispatch a validation subagent (read-only) for that chapter.
+2. Collect the validation report.
+   - **PASS** — Proceed to write the next chapter.
+   - **FAIL** — The main agent fixes the chapter based on the report, then re-dispatches the validation subagent. Repeat up to **3 rounds**.
+3. If the chapter still fails after 3 rounds, mark it with a comment at the top of the file:
+   ```markdown
+   <!-- VALIDATION: NEEDS MANUAL REVIEW — failed after 3 validation rounds -->
+   ```
+   Then proceed to the next chapter. Do not block the pipeline.
+
+#### Parallel Path Validation Flow (≥6 chapters)
+
+After all writing subagents complete and the main agent confirms all chapters exist:
+
+1. **Batch dispatch** validation subagents — one per chapter, all in parallel.
+2. Collect all validation reports.
+3. For chapters that **PASS** — no further action.
+4. For chapters that **FAIL** — dispatch repair subagents (one per failed chapter, in parallel). Each repair subagent receives:
+   - The chapter file path
+   - The validation report (full text)
+   - `references/content-guidelines.md` for reference
+   - Instructions to fix only the items listed in the report
+5. After repair subagents complete, re-dispatch validation subagents for the repaired chapters.
+6. Repeat the validate-repair cycle up to **3 rounds** per chapter.
+7. Chapters still failing after 3 rounds get the manual review marker (same as Sequential) and the pipeline continues.
+
+**Repair subagent instructions:**
+- Read the validation report and the chapter file.
+- Fix only the specific issues identified in the report.
+- Do NOT rewrite unrelated sections.
+- Read `references/content-guidelines.md` if the report references rules you need to understand.
+- Output the fixed chapter to the same file path, overwriting the previous version.
+
+#### Validation Efficiency Notes
+
+- Validation subagents are lightweight — they only read two files (chapter + guidelines). Keep them fast.
+- In Parallel path, launch all validation subagents simultaneously to minimize wall-clock time.
+- Repair subagents should fix surgically: address report items, nothing else.
+- The 3-round cap prevents infinite loops. Most chapters should pass within 1-2 rounds.
 
 ### Phase 4: Assembly & Output
 
