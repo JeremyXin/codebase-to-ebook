@@ -228,6 +228,22 @@ Each chapter should end with a **connection paragraph** linking to the next chap
 
 ## Formatting Standards
 
+**Chapter title format:**
+
+The chapter numbering and title format must be consistent throughout the book. Follow these rules exactly:
+
+- **Preface** — no chapter number. Title is just "前言" (zh) or "Preface" (en). Never "第 0 章" or "Chapter 0".
+- **Body chapters** — numbered starting from **1**, not 0. The preface does not count.
+- **Language consistency** — use the Output Language from `analysis-notes.md` for all chapter titles. Never mix languages in a title (e.g., never "Chapter 1: 项目概览 (Project Overview)").
+- **Format by language:**
+
+| Language | Format | Example |
+|----------|--------|---------|
+| zh-CN | `第 N 章：标题` | `第一章：项目概览` |
+| en | `Chapter N: Title` | `Chapter 1: Project Overview` |
+
+- **Section headings inside chapters** — use meaningful semantic titles, never block names (HOOK, BIG-PICTURE-DIAGRAM, RECAP-BRIDGE, etc.). Block names are internal construction labels, not reader-facing titles. See `references/block-reference.md` for the default section title for each block.
+
 **Code blocks:**
 - Always specify the language: \`\`\`typescript, \`\`\`python, etc.
 - Include file path if showing file contents: \`\`\`typescript:src/parser.ts

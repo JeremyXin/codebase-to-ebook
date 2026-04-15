@@ -8,23 +8,25 @@ This document defines the 11 content building blocks available for chapter const
 
 ## Block Index
 
-| Block | Role | Required? |
-|-------|------|-----------|
-| [HOOK](#hook) | Open with a compelling question or scenario | Every chapter |
-| [BIG-PICTURE-DIAGRAM](#big-picture-diagram) | Establish macro-level spatial understanding | Architecture/overview chapters |
-| [ANALOGY](#analogy) | Lower the barrier to abstract concepts | When mechanism is hard to intuit |
-| [MECHANISM](#mechanism) | Explain the "why" behind how something works | When surface behavior needs deep explanation |
-| [CODE-WALKTHROUGH](#code-walkthrough) | Read and parse existing codebase code | Core of most deep-dive chapters |
-| [MINI-DEMO](#mini-demo) | Minimal skeleton implementation that strips framework noise | After MECHANISM, to crystallize core principle |
-| [DESIGN-DECISION](#design-decision) | Document trade-offs and rationale for architectural choices | When real choices were made |
-| [SEQUENCE-FLOW](#sequence-flow) | Show a complete request/data processing path | Cross-module interactions, async flows |
-| [COMPARISON](#comparison) | Side-by-side contrast of two approaches or components | When boundary or trade-off needs to be sharp |
-| [PATTERN-TOUR](#pattern-tour) | Show one pattern appearing across multiple code locations | Cross-cutting concerns chapters |
-| [RECAP-BRIDGE](#recap-bridge) | Summarize this chapter and introduce the next chapter's problem | Every chapter |
+| Block | Role | Section Title (zh-CN / en) | Required? |
+|-------|------|---------------------------|-----------|
+| [HOOK](#hook) | Open with a compelling question or scenario | *(no title)* | Every chapter |
+| [BIG-PICTURE-DIAGRAM](#big-picture-diagram) | Establish macro-level spatial understanding | 整体架构 / System Architecture | Architecture/overview chapters |
+| [ANALOGY](#analogy) | Lower the barrier to abstract concepts | 类比说明 / Analogy Explanation | When mechanism is hard to intuit |
+| [MECHANISM](#mechanism) | Explain the "why" behind how something works | 原理解析 / How It Works | When surface behavior needs deep explanation |
+| [CODE-WALKTHROUGH](#code-walkthrough) | Read and parse existing codebase code | 核心代码解析 / Code Walkthrough | Core of most deep-dive chapters |
+| [MINI-DEMO](#mini-demo) | Minimal skeleton implementation that strips framework noise | 从 0-1 手动 Demo 实现 / Demo Implementation from 0-1 | After MECHANISM, to crystallize core principle |
+| [DESIGN-DECISION](#design-decision) | Document trade-offs and rationale for architectural choices | 设计决策 / Design Decisions | When real choices were made |
+| [SEQUENCE-FLOW](#sequence-flow) | Show a complete request/data processing path | 执行流程 / Execution Flow | Cross-module interactions, async flows |
+| [COMPARISON](#comparison) | Side-by-side contrast of two approaches or components | 对比分析 / Comparison | When boundary or trade-off needs to be sharp |
+| [PATTERN-TOUR](#pattern-tour) | Show one pattern appearing across multiple code locations | 模式全览 / Pattern Tour | Cross-cutting concerns chapters |
+| [RECAP-BRIDGE](#recap-bridge) | Summarize this chapter and introduce the next chapter's problem | *(no title)* | Every chapter |
 
 ---
 
 ## HOOK
+
+**Section Title:** None — HOOK content appears directly after the chapter `#` heading with no `##` section title. It is the chapter's opening prose, not a named section.
 
 **Role:** Open each chapter with a question or scenario that gives the reader a reason to keep reading. The hook frames what problem this chapter solves.
 
@@ -62,6 +64,10 @@ understanding it changes how you think about I/O-bound systems entirely.
 ---
 
 ## BIG-PICTURE-DIAGRAM
+
+**Section Title:**
+- zh-CN: `整体架构`
+- en: `System Architecture`
 
 **Role:** Give the reader a spatial map of the system or module before diving into details. Establishes the "where are we" orientation.
 
@@ -112,6 +118,10 @@ code lives entirely in the last handler; everything above it is Netty's concern.
 
 ## ANALOGY
 
+**Section Title:**
+- zh-CN: `类比说明`
+- en: `Analogy Explanation`
+
 **Role:** Use a concrete, everyday metaphor to make an abstract concept intuitively graspable before the technical explanation lands.
 
 **When to use:**
@@ -152,6 +162,10 @@ the guest rooms (handlers) are your application logic.
 ---
 
 ## MECHANISM
+
+**Section Title:**
+- zh-CN: `原理解析`
+- en: `How It Works`
 
 **Role:** Explain the internal working principle of a concept — not what it does, but why it works the way it does and what design problem that solves.
 
@@ -207,6 +221,12 @@ from *any* connection. This is why a single EventLoop thread can serve
 ---
 
 ## CODE-WALKTHROUGH
+
+**Section Title:**
+- zh-CN: `核心代码解析`
+- en: `Code Walkthrough`
+
+> **Multi-block note:** If a chapter contains multiple CODE-WALKTHROUGH blocks, replace the default title with a specific semantic title for each (e.g., zh-CN: `请求处理逻辑` / `连接管理逻辑`; en: `Request Handling` / `Connection Management`). Never use numbered variants like `核心代码解析 1`.
 
 **Role:** Show actual codebase code and guide the reader through it, focusing on design decisions and non-obvious logic — not line-by-line narration.
 
@@ -287,6 +307,10 @@ I/O processing.
 
 ## MINI-DEMO
 
+**Section Title:**
+- zh-CN: `从 0-1 手动 Demo 实现`
+- en: `Demo Implementation from 0-1`
+
 **Role:** A purpose-written minimal implementation that strips away framework complexity to expose the bare-bones core of a mechanism. The reader sees the principle, not the production code.
 
 **When to use:**
@@ -358,6 +382,10 @@ management.
 
 ## DESIGN-DECISION
 
+**Section Title:**
+- zh-CN: `设计决策`
+- en: `Design Decisions`
+
 **Role:** Document an explicit architectural or technical choice — what options existed, what was chosen, and why.
 
 **When to use:**
@@ -411,6 +439,10 @@ Linux without the portability cost.
 ---
 
 ## SEQUENCE-FLOW
+
+**Section Title:**
+- zh-CN: `执行流程`
+- en: `Execution Flow`
 
 **Role:** Show the complete path of a request, event, or data through the system — across module boundaries, in temporal order.
 
@@ -474,6 +506,10 @@ Key points:
 
 ## COMPARISON
 
+**Section Title:**
+- zh-CN: `对比分析`
+- en: `Comparison`
+
 **Role:** Place two approaches, modules, or implementations side by side to make their differences sharp and the trade-offs explicit.
 
 **When to use:**
@@ -526,6 +562,10 @@ profiler output in write-heavy applications.
 ---
 
 ## PATTERN-TOUR
+
+**Section Title:**
+- zh-CN: `模式全览`
+- en: `Pattern Tour`
 
 **Role:** Show one design pattern, convention, or strategy appearing across multiple locations in the codebase. Builds horizontal understanding: "this is how the whole system handles X."
 
@@ -611,6 +651,8 @@ chance for the pipeline to attempt recovery.
 ---
 
 ## RECAP-BRIDGE
+
+**Section Title:** None — RECAP-BRIDGE content appears as the chapter's closing prose with no `##` section title. It is a 2-4 sentence forward-linking paragraph, not a named section. Never add a heading like "总结" or "Summary" above it.
 
 **Role:** Close the chapter by consolidating what was learned and opening the door to the next chapter's problem — not a summary, but a forward pass.
 
