@@ -7,9 +7,40 @@ description: Transform any codebase into a professional technical ebook (HTML or
 
 Transform any codebase into a professional technical ebook. The output is a directory containing Markdown chapters, pre-built stylesheets, and assembly scripts that generate either an HTML ebook (with interactive Mermaid diagrams) or an EPUB ebook (for e-readers) — all from the same source content.
 
+## Author Pen Name (Persistent)
+
+Every ebook displays an author name on its title page (the `author` field in `metadata.yaml`). This skill stores the user's pen name persistently so they only need to provide it once.
+
+**Config file location:** `~/.config/codebase-to-ebook/config.json`
+
+```json
+{
+  "penName": "Your Pen Name"
+}
+```
+
+### Pen Name Resolution (executed EVERY time the skill is triggered)
+
+1. **Check** if `~/.config/codebase-to-ebook/config.json` exists and contains a non-empty `penName` field.
+2. **If found** — use it silently. No prompt needed. Proceed to the welcome message or directly to the requested task.
+3. **If NOT found** (first-time use) — ask the user before doing anything else:
+
+> **Before we start — what pen name would you like on your ebooks?**
+>
+> This will appear as "Author: [your name]" on the title page of every ebook I generate. You only need to set this once — I'll remember it for future sessions.
+>
+> *(Type a name, or say "skip" to leave the author field blank.)*
+
+4. **After the user responds:**
+   - If they provide a name → create `~/.config/codebase-to-ebook/config.json` with `{"penName": "<their name>"}` (create the directory if needed: `mkdir -p ~/.config/codebase-to-ebook`)
+   - If they say "skip" or similar → create the config with `{"penName": ""}` (so we don't ask again)
+5. **Proceed** to the normal welcome flow or the user's requested task.
+
+**Changing the pen name later:** If the user says "change my pen name" or "update author name" at any point, prompt for a new name and overwrite the config file.
+
 ## First-Run Welcome
 
-When the skill is first triggered and the user hasn't specified a codebase yet, introduce yourself:
+When the skill is first triggered and the user hasn't specified a codebase yet, introduce yourself (after pen name resolution above):
 
 > **I can turn any codebase into a professional technical ebook — an architecture guide that teaches how the system is designed.**
 >
@@ -139,10 +170,21 @@ After analysis, **immediately** write `ebook-name/analysis-notes.md` with the fo
 ## Code Snippet Index
 > Purpose: Pre-register code snippets suitable for chapter examples.
 > Phase 2.5 briefs will reference this index directly instead of re-scanning the codebase.
+> **Importance** drives the depth chain assigned in the brief (see `references/block-reference.md` → Depth Chain Rules).
+> **Related Concept** links to the Terminology table below and routes to a CONCEPT-FOUNDATION block.
 
-| Module | File:Lines | What It Shows | Suitable For Block |
-|--------|-----------|---------------|-------------------|
-| [e.g., Auth] | [src/auth/jwt.ts:45-78] | [JWT validation logic] | [CODE-WALKTHROUGH] |
+| Module | File:Lines | What It Shows | Importance | Related Concept | Suitable For Block |
+|--------|-----------|---------------|------------|-----------------|-------------------|
+| [e.g., Auth] | [src/auth/jwt.ts:45-78] | [JWT validation logic] | core | JWT token format | CODE-WALKTHROUGH |
+| [e.g., Auth] | [src/auth/middleware.ts:12-30] | [Request auth guard wiring] | secondary | — | CODE-WALKTHROUGH |
+| [e.g., Auth] | [src/auth/refresh.ts:8-15] | [Refresh token rotation] | context | OAuth refresh flow | CONCEPT-FOUNDATION |
+
+**Importance tiers:**
+- **core** — embodies a core knowledge point; warrants the full depth chain (concept → mechanism → code → elevation). Allocate the bulk of the chapter's word budget here.
+- **secondary** — supports understanding but is not the chapter's main teaching point; a single CODE-WALKTHROUGH pass.
+- **context** — provides foundation for a domain concept or shows where it fits; used inside a CONCEPT-FOUNDATION block, not a standalone walkthrough.
+
+**Related Concept:** the domain term or abstraction this snippet demonstrates (links to the Terminology table; drives CONCEPT-FOUNDATION routing). Use `—` if none.
 
 ## Terminology
 | Term in Codebase | Standardized Term for Ebook | Notes |
@@ -248,9 +290,14 @@ Read `references/chapter-brief-template.md` for the full template structure.
 ## Teaching Objective
 [Core learning goal for this chapter]
 
+## Knowledge Point Plan
+- **Core (full depth chain):** [1-2 points, e.g., "Reactor model → CONCEPT-FOUNDATION → MECHANISM → CODE-WALKTHROUGH → MINI-DEMO"]
+- **Secondary (single CODE-WALKTHROUGH):** [points to pass over quickly]
+- **Concepts needing foundation:** [domain terms needing a CONCEPT-FOUNDATION, e.g., "ByteBuf, EventLoop"]
+
 ## Block Sequence
 HOOK → [BLOCK] → ... → RECAP-BRIDGE
-[Structure rationale: 2-3 sentences on why these blocks in this order]
+[Structure rationale: 2-3 sentences on why these blocks in this order, and how they map to the core point's depth chain]
 
 ## Key Code Snippets
 [Copy from analysis-notes.md Code Snippet Index — paste relevant snippets with file paths]
@@ -335,7 +382,9 @@ EXPECTED OUTCOME: A structured validation report (format below) with a
 PASS/FAIL verdict and item-level details.
 
 REQUIRED TOOLS: Read (chapter file, references/content-guidelines.md,
-ebook-name/analysis-notes.md for Output Language field)
+ebook-name/analysis-notes.md for Output Language field, and the chapter
+brief at {brief_path} for the Knowledge Point Plan used by the depth
+checks below)
 
 MUST DO:
 - Read `references/content-guidelines.md` completely before checking.
@@ -363,6 +412,30 @@ MUST DO:
     in `ebook-name/analysis-notes.md` (Output Language field). Code
     snippets, variable names, and file paths remain in their original
     language regardless.
+  □ Core-point depth chain: for each core knowledge point listed in the
+    brief's Knowledge Point Plan, the chapter provides ≥3 depth layers
+    (chosen from CONCEPT-FOUNDATION, MECHANISM, CODE-WALKTHROUGH,
+    MINI-DEMO, DESIGN-DECISION, EXTENSION) AND ≥1 elevation block
+    (MINI-DEMO / DESIGN-DECISION / MECHANISM / EXTENSION / COMPARISON)
+    appears after the CODE-WALKTHROUGH serving that point. A core point
+    served by a single CODE-WALKTHROUGH with no elevation = FAIL.
+  □ Concept foundation: every concept listed under the brief's "Domain
+    Concepts Requiring Foundation" has a corresponding CONCEPT-FOUNDATION
+    block (or is folded into one) that appears BEFORE the code/mechanism
+    using that concept. A core concept used in a CODE-WALKTHROUGH with no
+    preceding CONCEPT-FOUNDATION = FAIL.
+  □ No raw-code stacking: no run of 3+ consecutive CODE-WALKTHROUGH
+    blocks (identified by their `##` section titles) without an elevation
+    block between them. 2 consecutive CODE-WALKTHROUGH blocks with no
+    elevation between = FAIL.
+  □ Chapter does not end on raw code: the block immediately before
+    RECAP-BRIDGE is not a CODE-WALKTHROUGH serving a core point (it must
+    be an elevation block, or a walkthrough serving a secondary point).
+    Ending on a core CODE-WALKTHROUGH with no elevation = FAIL.
+  □ Focus ratio: core knowledge-point content occupies the majority of
+    the chapter (≥50% of prose+code). If secondary/context content
+    outweighs core content, the chapter lacks focus = FAIL. Estimate by
+    mapping each `##` section to a knowledge point in the brief.
 - For each FAIL item, provide the specific location (section/paragraph)
   and a concrete, actionable fix suggestion.
 
@@ -467,15 +540,19 @@ ebook-name/
 - `references/build-html.sh` → `ebook-name/build-html.sh`
 - `references/build-epub.sh` → `ebook-name/build-epub.sh`
 
-**Step 2: Create metadata.yaml** — Write book metadata. Read the `Output Language` field from `ebook-name/analysis-notes.md` for the `lang` value:
+**Step 2: Create metadata.yaml** — Write book metadata. Read the `Output Language` field from `ebook-name/analysis-notes.md` for the `lang` value. Read the pen name from `~/.config/codebase-to-ebook/config.json` (the `penName` field) for the `author` value:
 ```yaml
 ---
 title: "Project Name: Architecture Guide"
-author: "Generated by AI"
+author: "Your Pen Name"   # ← Read from ~/.config/codebase-to-ebook/config.json penName field. If empty, omit this line entirely.
 date: "2026-01-15"
 lang: en  # ← Use value from analysis-notes.md Output Language field
 ---
 ```
+**Author field rules:**
+- If the config file has a non-empty `penName` → use it as the `author` value
+- If the config file has an empty `penName` (user chose "skip") → **omit the `author` field entirely** (the HTML template will not render the "by" line)
+- If the config file doesn't exist → run the Pen Name Resolution flow from the "Author Pen Name" section above, then use the result
 
 **Step 3: Write chapters** — Generate chapter Markdown files to `ebook-name/chapters/`
 
@@ -550,7 +627,7 @@ If a session is interrupted (token exhaustion, network disconnect, manual stop),
 The `references/` directory contains detailed specs. **Read them only when you reach the relevant phase** — not upfront. This keeps context lean.
 
 - **`references/content-guidelines.md`** — Writing style, content density, code explanation patterns (global quality standards for all blocks)
-- **`references/block-reference.md`** — The 11 building blocks: trigger conditions, content rules, typical structure, examples, and block relationships
+- **`references/block-reference.md`** — The 13 building blocks: trigger conditions, content rules, typical structure, examples, and block relationships
 - **`references/chapter-brief-template.md`** — Template for Phase 2.5 briefs (complex projects), including Chapter Structure with block sequence
 - **`references/rich-elements.md`** — Callout syntax, table formatting, code block patterns
 - **`references/gotchas.md`** — Common pitfalls checklist (read before Phase 4)

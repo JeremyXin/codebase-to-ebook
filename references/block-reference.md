@@ -1,8 +1,53 @@
 # Building Block Reference
 
-This document defines the 11 content building blocks available for chapter construction. When writing a Chapter Brief (Phase 2.5), select the blocks that best serve each chapter's teaching objective and arrange them in the optimal sequence.
+This document defines the 13 content building blocks available for chapter construction. When writing a Chapter Brief (Phase 2.5), select the blocks that best serve each chapter's teaching objective and arrange them in the optimal sequence.
 
 **Every chapter MUST start with HOOK and end with RECAP-BRIDGE.** All other blocks are chosen and ordered per-chapter based on what the content demands.
+
+---
+
+## Depth Chain: Mapping Knowledge-Point Importance to Block Sequences
+
+Not every knowledge point deserves the same depth. A brief's **Knowledge Point Plan** assigns each point an importance tier; this section defines the depth required per tier. These rules govern how blocks combine — read them before selecting a block sequence.
+
+### Importance Tiers
+
+| Tier | Meaning | Required Depth |
+|------|---------|----------------|
+| **core** | The chapter's primary teaching point; a core-module mechanism, a repeatedly-depended-upon abstraction, or a design idea the framework is built around | Full depth chain (below) — ≥3 depth layers including ≥1 elevation block after CODE-WALKTHROUGH |
+| **secondary** | Supports understanding but is not the main point; helper functions, wiring details, non-central flows | A single CODE-WALKTHROUGH pass; no elevation block required |
+| **context** | Provides foundation for a domain concept or shows where it fits | One CONCEPT-FOUNDATION block; no standalone walkthrough |
+
+### Core Depth Chain (recommended sequence)
+
+```
+CONCEPT-FOUNDATION → [ANALOGY if counter-intuitive] → MECHANISM → CODE-WALKTHROUGH → MINI-DEMO → DESIGN-DECISION → [EXTENSION]
+   概念铺垫            (类比, optional)                  原理        实现               本质        取舍          (扩展, optional)
+```
+
+Tier mapping:
+- **concept foundation** → CONCEPT-FOUNDATION — define the concept first
+- **principle** → MECHANISM — why it works this way
+- **implementation** → CODE-WALKTHROUGH — where it lives in code
+- **essence** → MINI-DEMO — stripped to the bare principle (or, if the real code already reveals the core clearly, a refined MECHANISM explanation instead)
+- **trade-off** → DESIGN-DECISION — what was gained / lost
+- **extension** → EXTENSION (optional capstone) — place in the wider field
+
+### Hard Minimums for Core Points
+
+A core knowledge point must satisfy ALL of:
+1. **≥3 depth layers** chosen from {CONCEPT-FOUNDATION, MECHANISM, CODE-WALKTHROUGH, MINI-DEMO, DESIGN-DECISION, EXTENSION}. A single CODE-WALKTHROUGH is never enough for a core point.
+2. **≥1 elevation block** (MINI-DEMO / DESIGN-DECISION / MECHANISM / EXTENSION / COMPARISON) appearing after the CODE-WALKTHROUGH that serves that point. Code alone, however well-explained, is not depth.
+3. **CONCEPT-FOUNDATION must precede code** if the concept is unfamiliar to the target reader (see the brief's "Domain Concepts Requiring Foundation"). If the concept was already established in an earlier chapter, this layer may be omitted — but then MECHANISM must be present to keep the layer count ≥3.
+
+### CODE-WALKTHROUGH Depth Pairing Rule
+
+CODE-WALKTHROUGH is the block most prone to "list code then explain" stacking. To prevent this:
+
+- A CODE-WALKTHROUGH serving a **core** point must be followed by ≥1 elevation block before the next CODE-WALKTHROUGH or RECAP-BRIDGE.
+- A CODE-WALKTHROUGH serving a **secondary** point may stand alone.
+- **Never chain 3+ CODE-WALKTHROUGH blocks in a row.** After 2 consecutive CODE-WALKTHROUGH blocks, an elevation block is mandatory.
+- **A chapter must not end on a core-point CODE-WALKTHROUGH.** The block before RECAP-BRIDGE must be an elevation block (or a secondary-point walkthrough). Ending on raw core code, without elevation, fails the depth requirement.
 
 ---
 
@@ -12,6 +57,7 @@ This document defines the 11 content building blocks available for chapter const
 |-------|------|---------------------------|-----------|
 | [HOOK](#hook) | Open with a compelling question or scenario | *(no title)* | Every chapter |
 | [BIG-PICTURE-DIAGRAM](#big-picture-diagram) | Establish macro-level spatial understanding | 整体架构 / System Architecture | Architecture/overview chapters |
+| [CONCEPT-FOUNDATION](#concept-foundation) | Introduce a domain concept before using it: what / why / where | 概念基础 / Concept Foundation | When a chapter relies on an unfamiliar domain concept or proprietary term |
 | [ANALOGY](#analogy) | Lower the barrier to abstract concepts | 类比说明 / Analogy Explanation | When mechanism is hard to intuit |
 | [MECHANISM](#mechanism) | Explain the "why" behind how something works | 原理解析 / How It Works | When surface behavior needs deep explanation |
 | [CODE-WALKTHROUGH](#code-walkthrough) | Read and parse existing codebase code | 核心代码解析 / Code Walkthrough | Core of most deep-dive chapters |
@@ -20,6 +66,7 @@ This document defines the 11 content building blocks available for chapter const
 | [SEQUENCE-FLOW](#sequence-flow) | Show a complete request/data processing path | 执行流程 / Execution Flow | Cross-module interactions, async flows |
 | [COMPARISON](#comparison) | Side-by-side contrast of two approaches or components | 对比分析 / Comparison | When boundary or trade-off needs to be sharp |
 | [PATTERN-TOUR](#pattern-tour) | Show one pattern appearing across multiple code locations | 模式全览 / Pattern Tour | Cross-cutting concerns chapters |
+| [EXTENSION](#extension) | Connect the concept to the wider field: peer systems, evolution, boundaries | 延伸与边界 / Extension & Limits | After a core concept's deep-dive; always in the summary chapter |
 | [RECAP-BRIDGE](#recap-bridge) | Summarize this chapter and introduce the next chapter's problem | *(no title)* | Every chapter |
 
 ---
@@ -113,6 +160,66 @@ code lives entirely in the last handler; everything above it is Netty's concern.
 **Relationship to other blocks:**
 - Follows HOOK
 - Usually followed by MECHANISM (to explain why it's structured this way) or CODE-WALKTHROUGH (to show the key code paths)
+
+---
+
+## CONCEPT-FOUNDATION
+
+**Section Title:**
+- zh-CN: `概念基础`
+- en: `Concept Foundation`
+
+**Role:** Introduce a domain concept, framework-specific pattern, or proprietary term before using it — define what it is, why it exists, and where it sits in the system. This is the "entry" layer that makes a subsequent MECHANISM or CODE-WALKTHROUGH comprehensible. CONCEPT-FOUNDATION introduces; ANALOGY lowers the barrier; MECHANISM explains runtime principle. They are three distinct layers.
+
+**When to use:**
+- The chapter relies on a domain concept or framework-specific term the reader has not met (e.g., Reactor model, ByteBuf, backpressure, Saga pattern, SSR hydration)
+- A proprietary abstraction from the codebase needs defining before the code makes sense (e.g., a framework's custom middleware type, a proprietary state machine)
+- The concept is a prerequisite for understanding the chapter's MECHANISM or CODE-WALKTHROUGH
+- Not for programming fundamentals (variables, functions, classes) — never explain these per content-guidelines
+- Not for terms that merely need standardizing — use the Terminology table in analysis-notes for "handler vs controller" style unification
+
+**Content rules:**
+- Must answer three questions in order: (1) what it is — a one-sentence definition; (2) why it exists — the problem it solves; (3) where it fits — its role in the system / category
+- The definition must be precise and self-contained: do not define a concept solely by analogy (that is ANALOGY's job), nor by "it's like X in framework Y" unless X is universally known
+- Name the category or family the concept belongs to: "X is a kind of Y" so the reader can slot it into existing knowledge
+- Keep to 150-250 words; this is scaffolding, not the main act
+- May include a small "where it fits" diagram only when the position is non-obvious
+- May follow the definition with a one-sentence analogy assist, but the definition must stand alone
+- Forbidden: explaining how it works internally (that is MECHANISM's job)
+- Forbidden: using an analogy as the primary means of definition
+- Forbidden: explaining programming fundamentals
+- Forbidden: listing API methods or configuration options (that is CODE-WALKTHROUGH territory)
+- Forbidden: placing CONCEPT-FOUNDATION after the code that introduces the concept
+
+**Typical structure:**
+```
+[Definition: one sentence — "X is a [category] that [does Y]"]
+[Why it exists: the problem this concept exists to solve]
+[Where it fits: its position in the system / which layer or family it belongs to]
+[Optional: a one-sentence analogy assist, or a small where-it-fits diagram]
+```
+
+**Example:**
+```markdown
+**ByteBuf** is Netty's own byte container — a buffer abstraction that
+replaces `java.nio.ByteBuffer` throughout the framework. It exists
+because `ByteBuffer` is fixed-capacity, has a single position pointer
+that forces flip/rewind gymnastics, and cannot combine buffers without
+copying. ByteBuf solves all three with separate read and write
+pointers, dynamic capacity expansion, and composite buffers that chain
+multiple buffers into a logical view without copying.
+
+ByteBuf sits at the bottom of Netty's data model: every byte entering
+or leaving the pipeline is a ByteBuf. Heap and direct-memory variants
+share the same interface, which is why handlers can process bytes
+without knowing where the memory lives.
+```
+
+**Relationship to other blocks:**
+- Usually precedes MECHANISM, CODE-WALKTHROUGH, or ANALOGY — it introduces the concept those blocks then deepen
+- Can pair with ANALOGY: CONCEPT-FOUNDATION defines, ANALOGY (optional) makes it intuitive
+- Do not place after CODE-WALKTHROUGH — the concept must be introduced before the code that uses it
+- At most one CONCEPT-FOUNDATION per distinct concept; if several concepts need introducing, use one block per concept, or fold minor concepts into the major one
 
 ---
 
@@ -302,6 +409,12 @@ I/O processing.
 - Usually follows MECHANISM or BIG-PICTURE-DIAGRAM
 - Can be followed by MINI-DEMO (if the framework code is dense and a skeleton helps clarify)
 - Can be followed by DESIGN-DECISION (to table the choices visible in the code)
+
+**Depth pairing (see Depth Chain rules):**
+- A CODE-WALKTHROUGH serving a core knowledge point must be followed by ≥1 elevation block (MINI-DEMO / DESIGN-DECISION / MECHANISM / EXTENSION / COMPARISON) before another CODE-WALKTHROUGH or RECAP-BRIDGE may begin.
+- A CODE-WALKTHROUGH serving a secondary point may stand alone.
+- Never chain 3+ CODE-WALKTHROUGH blocks; after 2, an elevation block is mandatory.
+- A chapter must not end on a CODE-WALKTHROUGH that serves a core point.
 
 ---
 
@@ -647,6 +760,72 @@ chance for the pipeline to attempt recovery.
 - Typically the central block in cross-cutting concern chapters
 - Often preceded by HOOK + a brief BIG-PICTURE-DIAGRAM showing where this concern lives in the architecture
 - Usually followed by DESIGN-DECISION (why this pattern was chosen over alternatives)
+
+---
+
+## EXTENSION
+
+**Section Title:**
+- zh-CN: `延伸与边界`
+- en: `Extension & Limits`
+
+**Role:** Connect the concept just explained to the wider field — how other systems solve the same problem, how the approach evolved, and where its boundaries or limits lie. Lifts the reader from "how this codebase does X" to "how X is done across the field."
+
+**When to use:**
+- After a core knowledge point's deep-dive (concept → mechanism → code → elevation), to place it in the wider field
+- The summary / final chapter (always — extension directions are the point of the final chapter)
+- Not for every chapter — only when the concept has meaningful wider context worth the reader's time
+- Not for trivial or self-contained concepts (a utility helper needs no wider context)
+- Not when there is a real in-codebase trade-off — use DESIGN-DECISION for that
+
+**Content rules:**
+- Must cover at least one of three dimensions: (1) peer systems — how other well-known systems solve the same problem and how this one differs; (2) evolution — how the approach developed over time, or where it may be heading; (3) boundaries — where this approach breaks down, or what it deliberately does not solve
+- Peer-system references must be real, well-known systems (e.g., "Netty vs Nginx event model," "Redux vs MobX"), not hypotheticals
+- Keep to 200-350 words; this is perspective, not a survey paper
+- Must not re-explain the concept (CONCEPT-FOUNDATION/MECHANISM already did) — assume the reader just understood it
+- Must not duplicate COMPARISON (contrasts two things within this codebase) or DESIGN-DECISION (records a choice this codebase made) — EXTENSION is about the wider field beyond this codebase
+- Forbidden: listing system names without saying what differs
+- Forbidden: generic "there are many approaches" with no specifics
+- Forbidden: using EXTENSION as a substitute for DESIGN-DECISION when a real in-codebase trade-off exists
+- Forbidden: placing EXTENSION before the concept is established — it assumes the reader already understands
+
+**Typical structure:**
+```
+[1 sentence: restate the concept's core idea in one line, then pivot to the wider field]
+[Develop one dimension — peer systems, evolution, or boundaries]
+[1-2 sentences: the sharp takeaway — what this comparison / limit reveals about the concept]
+```
+
+**Example:**
+```markdown
+The Reactor model is one answer to "how do you serve many connections
+with few threads" — but the field has several answers.
+
+Nginx uses the same epoll-based event loop, but single-process, with
+worker processes sharing the listening socket via `SO_REUSEPORT`,
+trading in-process pipelines for OS-level load balancing. Go's net
+package hides the loop entirely behind goroutines — one goroutine per
+connection, scheduled by the runtime, which is conceptually
+thread-per-connection but the "thread" is cheap user-space. Node.js,
+like Netty, exposes the loop to the developer directly but is
+single-threaded by default.
+
+The common spine across all four is multiplexing non-blocking I/O onto
+few execution contexts. The difference is who manages the context —
+the OS (Nginx), the runtime (Go), or the developer (Node, Netty) —
+and that choice decides how hard it is to write a concurrency bug.
+
+The boundary: Reactor scales connection count, not work. If a handler
+blocks on CPU-bound computation, the event loop stalls for every
+connection. That is why Netty offloads heavy work to a separate task
+pool — the model solves I/O wait, not CPU work.
+```
+
+**Relationship to other blocks:**
+- Usually follows a core concept's deep-dive chain (after CODE-WALKTHROUGH / MECHANISM / DESIGN-DECISION)
+- In the summary / final chapter, EXTENSION is often the central block (there may be several)
+- Must come before RECAP-BRIDGE (RECAP-BRIDGE is always last)
+- Avoid placing EXTENSION before the concept is established — it assumes the reader already understands
 
 ---
 

@@ -47,6 +47,23 @@ Criteria for judging important knowledge points include:
 - Can reflect the underlying interaction, mechanism design, and core ideas of the framework
 - Features and modules highlighted in codebase README.md
 
+**Operational method — importance tiers and depth:**
+Assign every knowledge point in the chapter to exactly one tier. The brief's Knowledge Point Plan records this assignment; the block sequence must follow it.
+
+| Tier | Required Depth |
+|------|----------------|
+| **core** | Full depth chain: ≥3 layers including ≥1 elevation block after CODE-WALKTHROUGH. Recommended sequence: CONCEPT-FOUNDATION → MECHANISM → CODE-WALKTHROUGH → MINI-DEMO → DESIGN-DECISION (→ optional EXTENSION). Spend the majority of the chapter's word budget here. |
+| **secondary** | A single CODE-WALKTHROUGH pass. No elevation block. |
+| **context** | One CONCEPT-FOUNDATION block; no standalone walkthrough. |
+
+**Hard rules (enforced by Phase 3.5 validation):**
+- A core point must never be served by a single CODE-WALKTHROUGH alone — code, however well-explained, is not depth.
+- 3+ consecutive CODE-WALKTHROUGH blocks with no elevation in between is always a failure (the "list code then explain" anti-pattern).
+- A chapter must not end on a core-point CODE-WALKTHROUGH.
+- Core content must occupy ≥50% of the chapter; do not spread depth thin across secondary points.
+
+See `references/block-reference.md` → Depth Chain Rules for the block-level composition rules.
+
 ## Multi-element content display
 Although the output is technical articles, don't write lengthy technical terms and words when generating content. ** Note: people often lack patience when reading large amounts of text **. Please follow the following guidelines when designing chapter content:
 - The proportion of words in each chapter shall not exceed 60%.
@@ -320,6 +337,11 @@ Before finalizing any chapter content, verify:
 - [ ] No em dashes (—) or en dashes (–)
 - [ ] Active voice, contractions, direct tone
 - [ ] Information density is high (no filler)
+- [ ] Every core knowledge point has ≥3 depth layers (CONCEPT-FOUNDATION / MECHANISM / CODE-WALKTHROUGH / MINI-DEMO / DESIGN-DECISION / EXTENSION), not a single CODE-WALKTHROUGH
+- [ ] Every domain concept is introduced via a CONCEPT-FOUNDATION block before it appears in code
+- [ ] No 3+ consecutive CODE-WALKTHROUGH blocks without an elevation block (MINI-DEMO / DESIGN-DECISION / MECHANISM / EXTENSION / COMPARISON) between them
+- [ ] Chapter does not end on a raw CODE-WALKTHROUGH — the block before RECAP-BRIDGE must be an elevation block or a secondary-point walkthrough
+- [ ] Core content occupies the majority of the chapter (≥50%) — focus is clear, depth not spread thin across secondary points
 
 ---
 

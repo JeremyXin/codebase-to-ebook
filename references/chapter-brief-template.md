@@ -51,13 +51,42 @@ stacking more explanatory blocks would slow the chapter's pace."]
 **Per-Block Content Notes:**
 
 For each block in the sequence, briefly note what specific content it should contain
-(the writing agent uses these notes when the pre-extracted snippets below are not
-self-explanatory):
+and which knowledge point it serves (from the Knowledge Point Plan below). The writing
+agent uses these notes when the pre-extracted snippets below are not self-explanatory:
 
 - **HOOK:** [What question or scenario opens this chapter]
-- **[BLOCK]:** [What specific content, diagram, or code this block covers]
-- **[BLOCK]:** [...]
+- **CONCEPT-FOUNDATION:** [Concept to define] — serves core point #[N] / concept-foundation layer
+- **MECHANISM:** [Principle to explain] — serves core point #[N] / principle layer
+- **CODE-WALKTHROUGH:** [Specific code] — serves core point #[N] (implementation layer) or secondary point [name] (single-layer pass)
+- **[ELEVATION BLOCK]:** [What it reveals] — serves core point #[N] / elevation layer
 - **RECAP-BRIDGE:** [What the reader now understands + what problem the next chapter introduces]
+
+---
+
+## Knowledge Point Plan
+
+> **Purpose:** Divide this chapter's content by importance so the writing agent spends depth where it matters. Each tier maps to a depth chain (see `references/block-reference.md` → Depth Chain Rules). The writing agent MUST satisfy the hard minimums for each core point.
+
+### Core Knowledge Points (max 2-3)
+> Each core point walks the full depth chain: CONCEPT-FOUNDATION → MECHANISM → CODE-WALKTHROUGH → [elevation block]. Allocate the majority of the chapter's word budget here. Core points must have ≥3 depth layers and ≥1 elevation block after their CODE-WALKTHROUGH.
+
+| # | Core Point | Depth Chain (blocks used) | Concept Requiring Foundation | Elevation Block |
+|---|------------|---------------------------|------------------------------|-----------------|
+| 1 | [e.g., Reactor threading model] | CONCEPT-FOUNDATION → MECHANISM → CODE-WALKTHROUGH → MINI-DEMO → DESIGN-DECISION | Reactor pattern | MINI-DEMO |
+| 2 | [e.g., Task queue I/O ratio] | CONCEPT-FOUNDATION → CODE-WALKTHROUGH → DESIGN-DECISION | ioRatio | DESIGN-DECISION |
+| 3 | [...] | [...] | [...] | [...] |
+
+### Secondary Knowledge Points (pass over)
+> A single CODE-WALKTHROUGH pass is enough. Do not elevate unless it reveals a core point.
+
+- [e.g., Task queue scheduling] → CODE-WALKTHROUGH only
+- [e.g., Channel lifecycle states] → CODE-WALKTHROUGH only
+
+### Domain Concepts Requiring Foundation (route to CONCEPT-FOUNDATION)
+> Concepts the reader has not met and that must be defined before the core chain lands. One CONCEPT-FOUNDATION block per distinct concept (fold minor concepts into the major one).
+
+- [e.g., ByteBuf] → CONCEPT-FOUNDATION before CODE-WALKTHROUGH #1
+- [e.g., Backpressure] → CONCEPT-FOUNDATION before MECHANISM
 
 ---
 
@@ -141,55 +170,7 @@ flowchart LR
 
 ## Chapter Structure Outline
 
-> **Purpose:** Define the section breakdown and flow for this chapter.
-
-### Introduction (200-300 words)
-- Hook: [e.g., "State management becomes critical as apps scale"]
-- Preview: [What will be covered in this chapter]
-- Connection to previous chapter: [Brief reference]
-
-### Section 1: [Section Title]
-**Word Count:** ~500 words  
-**Focus:** [What this section teaches]  
-**Snippets Used:** [Reference Snippet 1, Snippet 3]  
-**Diagrams Used:** [Reference Diagram 1]
-
-**Key Points:**
-- [Point 1]
-- [Point 2]
-
----
-
-### Section 2: [Section Title]
-**Word Count:** ~600 words  
-**Focus:** [What this section teaches]  
-**Snippets Used:** [Reference Snippet 2]  
-**Diagrams Used:** [None]
-
-**Key Points:**
-- [Point 1]
-- [Point 2]
-
----
-
-### Section 3: [Section Title]
-**Word Count:** ~700 words  
-**Focus:** [What this section teaches]  
-**Snippets Used:** [Reference Snippet 4, Snippet 5]  
-**Diagrams Used:** [Reference Diagram 2]
-
-**Key Points:**
-- [Point 1]
-- [Point 2]
-
----
-
-[Add more sections as needed]
-
-### RECAP-BRIDGE (2-4 sentences)
-- What the reader now understands that they didn't before (1-2 sentences)
-- What problem the next chapter solves — and why it's necessary given what was just learned (1-2 sentences)
-- Note: do NOT write a bullet-point summary of everything covered; this is a forward pass, not a recap list
+> Removed. Chapter structure is defined entirely by the **Chapter Structure** section above (block sequence + Per-Block Content Notes) together with the **Knowledge Point Plan**. Do not write a separate "Section 1/2/3 ~500 words" outline — it duplicates and conflicts with the block sequence. Each `##` heading in the chapter corresponds to a block; each block's depth is set by its tier in the Knowledge Point Plan.
 
 ---
 
@@ -236,9 +217,13 @@ flowchart LR
 Before submitting the chapter draft, confirm:
 - [ ] All pre-extracted snippets are used and explained
 - [ ] All planned diagrams are included
-- [ ] Chapter structure follows the outline
+- [ ] Block sequence matches the Knowledge Point Plan depth chains (core points have ≥3 layers + ≥1 elevation block)
 - [ ] Word count is within target range
 - [ ] Transitions to prev/next chapters are present
+- [ ] Every core knowledge point has ≥3 depth layers including an elevation block after its CODE-WALKTHROUGH
+- [ ] Every concept under "Domain Concepts Requiring Foundation" has a CONCEPT-FOUNDATION block before the code that uses it
+- [ ] No 3+ consecutive CODE-WALKTHROUGH blocks without an elevation block between
+- [ ] Chapter does not end on a core-point CODE-WALKTHROUGH
 - [ ] Teaching objective is clearly addressed
 - [ ] Tone matches project requirements
 - [ ] No new codebase exploration was needed (all snippets pre-provided)
